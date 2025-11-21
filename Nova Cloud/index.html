@@ -1,0 +1,4101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(180deg, #1e3a5f 0%, #121212 50%);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .album-art-container {
+            position: relative;
+            transition: transform 0.3s ease;
+            width: 100%;
+            max-width: 640px;
+            aspect-ratio: 16/9;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .album-art-container:hover {
+            transform: scale(1.02);
+        }
+
+        @media (max-width: 768px) {
+            .album-art-container {
+                max-width: 100%;
+                border-radius: 8px;
+            }
+            
+            .album-art-container:hover {
+                transform: none;
+            }
+        }
+
+        .album-art {
+            border-radius: 50%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.5s ease;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border: 8px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #player {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+        }
+
+        #player iframe {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .progress-bar {
+            position: relative;
+            height: 4px;
+            background: #4d4d4d;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: height 0.2s;
+        }
+
+        .progress-bar:hover {
+            height: 6px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #1db954;
+            border-radius: 2px;
+            position: relative;
+            transition: width 0.1s linear;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .progress-bar:hover .progress-fill::after {
+            opacity: 1;
+        }
+
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: #b3b3b3;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            color: #fff;
+            transform: scale(1.06);
+        }
+
+        .control-btn.active {
+            color: #1db954;
+        }
+
+        .play-btn {
+            width: 56px;
+            height: 56px;
+            background: #fff;
+            color: #000;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.06);
+            background: #fff;
+        }
+
+        .volume-slider {
+            width: 100px;
+            height: 4px;
+            background: #4d4d4d;
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .volume-fill {
+            height: 100%;
+            background: #fff;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .volume-fill::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .volume-slider:hover .volume-fill::after {
+            opacity: 1;
+        }
+
+        .queue-item {
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .queue-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .queue-item.active {
+            background: rgba(29, 185, 84, 0.2);
+        }
+
+        .rotating {
+            animation: rotate 20s linear infinite;
+        }
+
+        .paused {
+            animation-play-state: paused;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        .scroll-container {
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #4d4d4d #121212;
+        }
+
+        .scroll-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scroll-container::-webkit-scrollbar-track {
+            background: #121212;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: #4d4d4d;
+            border-radius: 4px;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-black bg-opacity-40 backdrop-blur-sm p-3 md:p-4">
+        <div class="flex items-center max-w-7xl mx-auto">
+            <div class="flex items-center gap-2 md:gap-3">
+                <img src="Nova.png" alt="Nova Cloud Logo" class="w-8 h-8 md:w-12 md:h-12 rounded-full shadow-lg">
+                <h1 class="text-lg md:text-2xl font-bold text-white">Polo</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <!-- Player Area -->
+        <div class="flex-1 flex flex-col items-center justify-center p-4 md:p-8 overflow-y-auto">
+            <!-- Video Player -->
+            <div class="album-art-container mb-4 md:mb-8" id="videoContainer">
+                <!-- YouTube Player will be embedded here -->
+            </div>
+
+            <!-- Track Info -->
+            <div class="text-center mb-4 md:mb-8 fade-in px-4">
+                <h2 id="trackTitle" class="text-2xl md:text-4xl font-bold mb-1 md:mb-2 truncate">Midnight Dreams</h2>
+                <p id="trackArtist" class="text-base md:text-xl text-gray-400 mb-1 truncate">The Wanderers</p>
+                <p id="trackAlbum" class="text-xs md:text-sm text-gray-500 truncate">Echoes of Tomorrow</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full max-w-2xl mb-3 md:mb-4 px-4">
+                <div class="flex items-center gap-2 md:gap-4">
+                    <span id="currentTime" class="text-xs md:text-sm text-gray-400 w-10 md:w-12 text-right">0:00</span>
+                    <div class="progress-bar flex-1" id="progressBar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <span id="duration" class="text-xs md:text-sm text-gray-400 w-10 md:w-12">3:45</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center gap-3 md:gap-4 mb-4 md:mb-8">
+                <button class="control-btn text-lg md:text-xl" id="prevBtn" title="Previous">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button class="control-btn play-btn" id="playBtn" title="Play/Pause">
+                    <i class="fas fa-play text-xl md:text-2xl" id="playIcon"></i>
+                </button>
+                <button class="control-btn text-lg md:text-xl" id="nextBtn" title="Next">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+
+            <!-- Volume Control -->
+            <div class="hidden md:flex items-center gap-3">
+                <i class="fas fa-volume-down text-gray-400"></i>
+                <div class="volume-slider" id="volumeSlider">
+                    <div class="volume-fill" id="volumeFill" style="width: 70%"></div>
+                </div>
+                <i class="fas fa-volume-up text-gray-400"></i>
+            </div>
+        </div>
+
+        <!-- Queue Sidebar -->
+        <div class="w-full md:w-80 bg-black bg-opacity-40 backdrop-blur-sm p-4 md:p-6 border-t md:border-t-0 md:border-l border-gray-800 max-h-64 md:max-h-full overflow-hidden">
+            <h3 class="text-lg md:text-xl font-bold mb-3 md:mb-4 flex items-center justify-between">
+                <span>Playlist</span>
+                <span class="text-xs md:text-sm text-gray-400" id="queueCount">500 songs</span>
+            </h3>
+            <div class="scroll-container" style="max-height: calc(100vh - 200px);" id="queueList">
+                <!-- Queue items will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        // Song data with YouTube video IDs
+        const songs = [
+            {
+                title: "Blinding Lights",
+                artist: "The Weeknd",
+                album: "After Hours",
+                youtubeId: "fHI8X4OXluQ",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Shape of You",
+                artist: "Ed Sheeran",
+                album: "÷ (Divide)",
+                youtubeId: "JGwWNGJdvx8",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Levitating",
+                artist: "Dua Lipa",
+                album: "Future Nostalgia",
+                youtubeId: "TUVcZfQe-Kw",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sunflower",
+                artist: "Post Malone, Swae Lee",
+                album: "Spider-Man: Into the Spider-Verse",
+                youtubeId: "ApXoWvfEYVU",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "As It Was",
+                artist: "Harry Styles",
+                album: "Harry's House",
+                youtubeId: "H5v3kku4y6Q",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Anti-Hero",
+                artist: "Taylor Swift",
+                album: "Midnights",
+                youtubeId: "b1kbLwvqugk",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Heat Waves",
+                artist: "Glass Animals",
+                album: "Dreamland",
+                youtubeId: "mRD0-GxqHVo",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Save Your Tears",
+                artist: "The Weeknd",
+                album: "After Hours",
+                youtubeId: "XXYlFuWEuKI",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Someone Like You",
+                artist: "Adele",
+                album: "21",
+                youtubeId: "hLQl3WQQoQ0",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Bohemian Rhapsody",
+                artist: "Queen",
+                album: "A Night at the Opera",
+                youtubeId: "fJ9rUzIMcZQ",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Believer",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "7wtfhZwyrcc",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Bad Guy",
+                artist: "Billie Eilish",
+                album: "When We All Fall Asleep",
+                youtubeId: "DyDfgMOUjCI",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Radioactive",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "ktvTqknDobU",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Counting Stars",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "hT_nvWreIhg",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Thunder",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "fKopy74weus",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Uptown Funk",
+                artist: "Mark Ronson ft. Bruno Mars",
+                album: "Uptown Special",
+                youtubeId: "OPf0YbXqDm0",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Perfect",
+                artist: "Ed Sheeran",
+                album: "÷ (Divide)",
+                youtubeId: "2Vv-BfVoq4g",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Closer",
+                artist: "The Chainsmokers ft. Halsey",
+                album: "Collage",
+                youtubeId: "PT2_F-1esPk",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Something Just Like This",
+                artist: "The Chainsmokers & Coldplay",
+                album: "Memories...Do Not Open",
+                youtubeId: "FM7MFYoylVs",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Happier",
+                artist: "Marshmello ft. Bastille",
+                album: "Happier",
+                youtubeId: "m7Bc3pLyij0",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Demons",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "mWRsgZuwf_8",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "One Dance",
+                artist: "Drake ft. Wizkid & Kyla",
+                album: "Views",
+                youtubeId: "oUbpGmR1-QM",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Havana",
+                artist: "Camila Cabello ft. Young Thug",
+                album: "Camila",
+                youtubeId: "BQ0mxQXmLsk",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Despacito",
+                artist: "Luis Fonsi ft. Daddy Yankee",
+                album: "Vida",
+                youtubeId: "kJQP7kiw5Fk",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "See You Again",
+                artist: "Wiz Khalifa ft. Charlie Puth",
+                album: "Furious 7",
+                youtubeId: "RgKAFK5djSk",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Thinking Out Loud",
+                artist: "Ed Sheeran",
+                album: "x (Multiply)",
+                youtubeId: "lp-EO5I60KA",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Stay",
+                artist: "The Kid LAROI & Justin Bieber",
+                album: "F*ck Love 3",
+                youtubeId: "kTJczUoc26U",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Watermelon Sugar",
+                artist: "Harry Styles",
+                album: "Fine Line",
+                youtubeId: "E07s5ZYygMg",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Peaches",
+                artist: "Justin Bieber ft. Daniel Caesar",
+                album: "Justice",
+                youtubeId: "tQ0yjYUFKAE",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "drivers license",
+                artist: "Olivia Rodrigo",
+                album: "SOUR",
+                youtubeId: "ZmDBbnmKpqQ",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "good 4 u",
+                artist: "Olivia Rodrigo",
+                album: "SOUR",
+                youtubeId: "gNi_6U5Pm_o",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Shallow",
+                artist: "Lady Gaga & Bradley Cooper",
+                album: "A Star Is Born",
+                youtubeId: "bo_efYhYU2A",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Señorita",
+                artist: "Shawn Mendes & Camila Cabello",
+                album: "Señorita",
+                youtubeId: "Pkh8UtuejGw",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Dance Monkey",
+                artist: "Tones and I",
+                album: "The Kids Are Coming",
+                youtubeId: "q0hyYWKXF0Q",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Circles",
+                artist: "Post Malone",
+                album: "Hollywood's Bleeding",
+                youtubeId: "wXhTHyIgQ_U",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Memories",
+                artist: "Maroon 5",
+                album: "Memories",
+                youtubeId: "SlPhMPnQ58k",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Old Town Road",
+                artist: "Lil Nas X ft. Billy Ray Cyrus",
+                album: "7",
+                youtubeId: "r7qovpFAGrQ",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Without Me",
+                artist: "Halsey",
+                album: "Manic",
+                youtubeId: "ZAfAud_M_mg",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "7 rings",
+                artist: "Ariana Grande",
+                album: "thank u, next",
+                youtubeId: "QYh6mYIJG2Y",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "thank u, next",
+                artist: "Ariana Grande",
+                album: "thank u, next",
+                youtubeId: "gl1aHhXnN1k",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lose Yourself",
+                artist: "Eminem",
+                album: "8 Mile",
+                youtubeId: "_Yhyp-_hX2s",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Love Yourself",
+                artist: "Justin Bieber",
+                album: "Purpose",
+                youtubeId: "oyEuk8j8imI",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sugar",
+                artist: "Maroon 5",
+                album: "V",
+                youtubeId: "09R8_2nJtjg",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Rolling in the Deep",
+                artist: "Adele",
+                album: "21",
+                youtubeId: "rYEDA3JcQqw",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Viva La Vida",
+                artist: "Coldplay",
+                album: "Viva la Vida",
+                youtubeId: "dvgZkm1xWPE",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Shake It Off",
+                artist: "Taylor Swift",
+                album: "1989",
+                youtubeId: "nfWlot6h_JM",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Blank Space",
+                artist: "Taylor Swift",
+                album: "1989",
+                youtubeId: "e-ORhEE9VVg",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Starboy",
+                artist: "The Weeknd ft. Daft Punk",
+                album: "Starboy",
+                youtubeId: "34Na4j8AVgA",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Can't Stop the Feeling!",
+                artist: "Justin Timberlake",
+                album: "Trolls",
+                youtubeId: "ru0K8uYEZWw",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Girls Like You",
+                artist: "Maroon 5 ft. Cardi B",
+                album: "Red Pill Blues",
+                youtubeId: "aJOTlE1K90k",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Roar",
+                artist: "Katy Perry",
+                album: "Prism",
+                youtubeId: "CevxZvSJLk8",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Firework",
+                artist: "Katy Perry",
+                album: "Teenage Dream",
+                youtubeId: "QGJuMBdaqIw",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Dark Horse",
+                artist: "Katy Perry ft. Juicy J",
+                album: "Prism",
+                youtubeId: "0KSOMA3QBU0",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Teenage Dream",
+                artist: "Katy Perry",
+                album: "Teenage Dream",
+                youtubeId: "98WtmW-lfeE",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "California Gurls",
+                artist: "Katy Perry ft. Snoop Dogg",
+                album: "Teenage Dream",
+                youtubeId: "F57P9C4SAW4",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Party Rock Anthem",
+                artist: "LMFAO ft. Lauren Bennett",
+                album: "Sorry for Party Rocking",
+                youtubeId: "KQ6zr6kCPj8",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "We Found Love",
+                artist: "Rihanna ft. Calvin Harris",
+                album: "Talk That Talk",
+                youtubeId: "tg00YEETFzg",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Diamonds",
+                artist: "Rihanna",
+                album: "Unapologetic",
+                youtubeId: "lWA2pjMjpBs",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Umbrella",
+                artist: "Rihanna ft. Jay-Z",
+                album: "Good Girl Gone Bad",
+                youtubeId: "CvBfHwUxHIk",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Stay",
+                artist: "Rihanna ft. Mikky Ekko",
+                album: "Unapologetic",
+                youtubeId: "JF8BRvqGCNs",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Work",
+                artist: "Rihanna ft. Drake",
+                album: "ANTI",
+                youtubeId: "HL1UzIK-flA",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "What Makes You Beautiful",
+                artist: "One Direction",
+                album: "Up All Night",
+                youtubeId: "QJO3ROT-A4E",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Story of My Life",
+                artist: "One Direction",
+                album: "Midnight Memories",
+                youtubeId: "W-TE_Ys4iwM",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Best Song Ever",
+                artist: "One Direction",
+                album: "Midnight Memories",
+                youtubeId: "o_v9MY_FMcw",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Drag Me Down",
+                artist: "One Direction",
+                album: "Made in the A.M.",
+                youtubeId: "Jwgf3wmiA04",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Night Changes",
+                artist: "One Direction",
+                album: "Four",
+                youtubeId: "syFZfO_wfMQ",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sorry",
+                artist: "Justin Bieber",
+                album: "Purpose",
+                youtubeId: "fRh_vgS2dFE",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "What Do You Mean?",
+                artist: "Justin Bieber",
+                album: "Purpose",
+                youtubeId: "DK_0jXPuIr0",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Baby",
+                artist: "Justin Bieber ft. Ludacris",
+                album: "My World 2.0",
+                youtubeId: "kffacxfA7G4",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Intentions",
+                artist: "Justin Bieber ft. Quavo",
+                album: "Changes",
+                youtubeId: "3AyMjyHu1bA",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Yummy",
+                artist: "Justin Bieber",
+                album: "Changes",
+                youtubeId: "8EJ3zbKTWQ8",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Let Me Love You",
+                artist: "DJ Snake ft. Justin Bieber",
+                album: "Encore",
+                youtubeId: "euCqAq6BRa4",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I'm the One",
+                artist: "DJ Khaled ft. Justin Bieber",
+                album: "Grateful",
+                youtubeId: "weeI1G46q0o",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Unstoppable",
+                artist: "Sia",
+                album: "This Is Acting",
+                youtubeId: "cxjvTXo9WWM",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Cheap Thrills",
+                artist: "Sia",
+                album: "This Is Acting",
+                youtubeId: "nYh-n7EOtMA",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Chandelier",
+                artist: "Sia",
+                album: "1000 Forms of Fear",
+                youtubeId: "2vjPBrBU-TM",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Titanium",
+                artist: "David Guetta ft. Sia",
+                album: "Nothing but the Beat",
+                youtubeId: "JRfuAukYTKg",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Alive",
+                artist: "Sia",
+                album: "This Is Acting",
+                youtubeId: "t2NgsJrrAyM",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hall of Fame",
+                artist: "The Script ft. will.i.am",
+                album: "#3",
+                youtubeId: "mk48xRzuNvA",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Breakeven",
+                artist: "The Script",
+                album: "The Script",
+                youtubeId: "MzCLLHscMOw",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Superheroes",
+                artist: "The Script",
+                album: "No Sound Without Silence",
+                youtubeId: "WIm1GgfRz6M",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "The Man Who Can't Be Moved",
+                artist: "The Script",
+                album: "The Script",
+                youtubeId: "gS9o1FAszdk",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Faded",
+                artist: "Alan Walker",
+                album: "Different World",
+                youtubeId: "60ItHLz5WEA",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Alone",
+                artist: "Alan Walker",
+                album: "Different World",
+                youtubeId: "1-xGerv5FOk",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "On My Way",
+                artist: "Alan Walker, Sabrina Carpenter",
+                album: "Different World",
+                youtubeId: "dhYOPzcsbGM",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Darkside",
+                artist: "Alan Walker ft. Au/Ra",
+                album: "Different World",
+                youtubeId: "M-P4QBt-FWw",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "The Spectre",
+                artist: "Alan Walker",
+                album: "Different World",
+                youtubeId: "wJnBTPUQS5A",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wake Me Up",
+                artist: "Avicii",
+                album: "True",
+                youtubeId: "IcrbM1l_BoI",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "The Nights",
+                artist: "Avicii",
+                album: "The Days / Nights",
+                youtubeId: "UtF6Jej8yb4",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Waiting For Love",
+                artist: "Avicii",
+                album: "Stories",
+                youtubeId: "cHHLHGNpCSA",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Levels",
+                artist: "Avicii",
+                album: "Levels",
+                youtubeId: "_ovdm2yX4MA",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hey Brother",
+                artist: "Avicii",
+                album: "True",
+                youtubeId: "6Cp6mKbRTQY",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Without You",
+                artist: "Avicii ft. Sandro Cavazza",
+                album: "AVĪCI (01)",
+                youtubeId: "WRz2MxhAdJo",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hymn for the Weekend",
+                artist: "Coldplay",
+                album: "A Head Full of Dreams",
+                youtubeId: "YykjpeuMNEk",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Adventure of a Lifetime",
+                artist: "Coldplay",
+                album: "A Head Full of Dreams",
+                youtubeId: "QtXby3twMmI",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "A Sky Full of Stars",
+                artist: "Coldplay",
+                album: "Ghost Stories",
+                youtubeId: "VPRjCeoBqrI",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Paradise",
+                artist: "Coldplay",
+                album: "Mylo Xyloto",
+                youtubeId: "1G4isv_Fylg",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Fix You",
+                artist: "Coldplay",
+                album: "X&Y",
+                youtubeId: "k4V3Mo61fJM",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Happier Than Ever",
+                artist: "Billie Eilish",
+                album: "Happier Than Ever",
+                youtubeId: "5GJWxDKyk3A",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Therefore I Am",
+                artist: "Billie Eilish",
+                album: "Happier Than Ever",
+                youtubeId: "RUQl6YcMalg",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "lovely",
+                artist: "Billie Eilish & Khalid",
+                album: "dont smile at me",
+                youtubeId: "V1Pl8CzNzCw",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Ocean Eyes",
+                artist: "Billie Eilish",
+                album: "dont smile at me",
+                youtubeId: "viimfQi_pUw",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "when the party's over",
+                artist: "Billie Eilish",
+                album: "When We All Fall Asleep",
+                youtubeId: "pbMwTqkKSps",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Montero (Call Me By Your Name)",
+                artist: "Lil Nas X",
+                album: "Montero",
+                youtubeId: "6swmTBVI83k",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Industry Baby",
+                artist: "Lil Nas X & Jack Harlow",
+                album: "Montero",
+                youtubeId: "UTHLKHL_whs",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Levitating (Remix)",
+                artist: "Dua Lipa ft. DaBaby",
+                album: "Future Nostalgia",
+                youtubeId: "Qj94Z6l2Ga0",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Don't Start Now",
+                artist: "Dua Lipa",
+                album: "Future Nostalgia",
+                youtubeId: "oygrmJFKYZY",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Break My Heart",
+                artist: "Dua Lipa",
+                album: "Future Nostalgia",
+                youtubeId: "Nj2U6rhnucI",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Physical",
+                artist: "Dua Lipa",
+                album: "Future Nostalgia",
+                youtubeId: "9HDEHj2yzew",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "New Rules",
+                artist: "Dua Lipa",
+                album: "Dua Lipa",
+                youtubeId: "k2qgadSvNyU",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "IDGAF",
+                artist: "Dua Lipa",
+                album: "Dua Lipa",
+                youtubeId: "Mgfe5tIwOj0",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lover",
+                artist: "Taylor Swift",
+                album: "Lover",
+                youtubeId: "e-ORhEE9VVg",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "ME!",
+                artist: "Taylor Swift ft. Brendon Urie",
+                album: "Lover",
+                youtubeId: "FuXNumBwDOM",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "You Need to Calm Down",
+                artist: "Taylor Swift",
+                album: "Lover",
+                youtubeId: "Dkk9gvTmCXY",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Look What You Made Me Do",
+                artist: "Taylor Swift",
+                album: "Reputation",
+                youtubeId: "3tmd-ClpJxA",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Delicate",
+                artist: "Taylor Swift",
+                album: "Reputation",
+                youtubeId: "tCXGJQYZ9JA",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wildest Dreams",
+                artist: "Taylor Swift",
+                album: "1989",
+                youtubeId: "IdneKLhsWOQ",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Style",
+                artist: "Taylor Swift",
+                album: "1989",
+                youtubeId: "-CmadmM5cOk",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Cardigan",
+                artist: "Taylor Swift",
+                album: "folklore",
+                youtubeId: "K-a8s8OLBSE",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Willow",
+                artist: "Taylor Swift",
+                album: "evermore",
+                youtubeId: "RsEZmictANA",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Golden",
+                artist: "Harry Styles",
+                album: "Fine Line",
+                youtubeId: "P3cffdsEXXw",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Adore You",
+                artist: "Harry Styles",
+                album: "Fine Line",
+                youtubeId: "VF-FGf_ZZiI",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sign of the Times",
+                artist: "Harry Styles",
+                album: "Harry Styles",
+                youtubeId: "qN4ooNx77u0",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Kiwi",
+                artist: "Harry Styles",
+                album: "Harry Styles",
+                youtubeId: "9wg4VTvLa1g",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Positions",
+                artist: "Ariana Grande",
+                album: "Positions",
+                youtubeId: "tcYodQoapMg",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "34+35",
+                artist: "Ariana Grande",
+                album: "Positions",
+                youtubeId: "B6_iQvaIjXw",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "pov",
+                artist: "Ariana Grande",
+                album: "Positions",
+                youtubeId: "WPTpK76z-kw",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "no tears left to cry",
+                artist: "Ariana Grande",
+                album: "Sweetener",
+                youtubeId: "ffxKSjUwKdU",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "breathin",
+                artist: "Ariana Grande",
+                album: "Sweetener",
+                youtubeId: "kN0iD0pI3o0",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "God is a woman",
+                artist: "Ariana Grande",
+                album: "Sweetener",
+                youtubeId: "kHLHSlExFis",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Side To Side",
+                artist: "Ariana Grande ft. Nicki Minaj",
+                album: "Dangerous Woman",
+                youtubeId: "SXiSVQZLje8",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Dangerous Woman",
+                artist: "Ariana Grande",
+                album: "Dangerous Woman",
+                youtubeId: "9WbCfHutDSE",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Into You",
+                artist: "Ariana Grande",
+                album: "Dangerous Woman",
+                youtubeId: "1ekZEVeXwek",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Problem",
+                artist: "Ariana Grande ft. Iggy Azalea",
+                album: "My Everything",
+                youtubeId: "iS1g8G_njx8",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Bang Bang",
+                artist: "Jessie J, Ariana Grande, Nicki Minaj",
+                album: "Sweet Talker",
+                youtubeId: "0HDdjwpPM3Y",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hotline Bling",
+                artist: "Drake",
+                album: "Views",
+                youtubeId: "uxpDa-c-4Mc",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "In My Feelings",
+                artist: "Drake",
+                album: "Scorpion",
+                youtubeId: "DRS_PpOrUZ4",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "God's Plan",
+                artist: "Drake",
+                album: "Scorpion",
+                youtubeId: "xpVfcZ0ZcFM",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Nice For What",
+                artist: "Drake",
+                album: "Scorpion",
+                youtubeId: "U9BwWKXjVaI",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Started From the Bottom",
+                artist: "Drake",
+                album: "Nothing Was the Same",
+                youtubeId: "RubBzkZzpUA",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Take Care",
+                artist: "Drake ft. Rihanna",
+                album: "Take Care",
+                youtubeId: "oxoEpVDGvPE",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "The Hills",
+                artist: "The Weeknd",
+                album: "Beauty Behind the Madness",
+                youtubeId: "yzTuBuRdAyA",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Can't Feel My Face",
+                artist: "The Weeknd",
+                album: "Beauty Behind the Madness",
+                youtubeId: "KEI4qSrkPAs",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Earned It",
+                artist: "The Weeknd",
+                album: "Beauty Behind the Madness",
+                youtubeId: "waU75jdUnYw",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Feel It Coming",
+                artist: "The Weeknd ft. Daft Punk",
+                album: "Starboy",
+                youtubeId: "qFLhGq0060w",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Die For You",
+                artist: "The Weeknd",
+                album: "Starboy",
+                youtubeId: "2LBBaD1bwR8",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Heartless",
+                artist: "The Weeknd",
+                album: "After Hours",
+                youtubeId: "1DpH-icPpl0",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "In Your Eyes",
+                artist: "The Weeknd",
+                album: "After Hours",
+                youtubeId: "dqRZDebPIGs",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Rockstar",
+                artist: "Post Malone ft. 21 Savage",
+                album: "Beerbongs & Bentleys",
+                youtubeId: "larT0JesqJM",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Psycho",
+                artist: "Post Malone ft. Ty Dolla $ign",
+                album: "Beerbongs & Bentleys",
+                youtubeId: "au2n7VVGv_c",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Better Now",
+                artist: "Post Malone",
+                album: "Beerbongs & Bentleys",
+                youtubeId: "UYwF-jdcVjY",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Congratulations",
+                artist: "Post Malone ft. Quavo",
+                album: "Stoney",
+                youtubeId: "SC4xMk98Pdc",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "White Iverson",
+                artist: "Post Malone",
+                album: "Stoney",
+                youtubeId: "SLsTsku2zFk",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Fall Apart",
+                artist: "Post Malone",
+                album: "Stoney",
+                youtubeId: "y7OytvBoZxg",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wow.",
+                artist: "Post Malone",
+                album: "Hollywood's Bleeding",
+                youtubeId: "393C3pr2ioY",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Goodbyes",
+                artist: "Post Malone ft. Young Thug",
+                album: "Hollywood's Bleeding",
+                youtubeId: "ba7mB8oueCY",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "It Ain't Me",
+                artist: "Kygo & Selena Gomez",
+                album: "It Ain't Me",
+                youtubeId: "D5drYkLiLI8",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wolves",
+                artist: "Selena Gomez & Marshmello",
+                album: "Wolves",
+                youtubeId: "cH4E_t3m3xM",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lose You To Love Me",
+                artist: "Selena Gomez",
+                album: "Rare",
+                youtubeId: "zlJDTxahav0",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hands To Myself",
+                artist: "Selena Gomez",
+                album: "Revival",
+                youtubeId: "0-JJuHpfN5g",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Good For You",
+                artist: "Selena Gomez ft. A$AP Rocky",
+                album: "Revival",
+                youtubeId: "1TsVjvEkc4s",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Same Old Love",
+                artist: "Selena Gomez",
+                album: "Revival",
+                youtubeId: "0wiUXH73rvI",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Come & Get It",
+                artist: "Selena Gomez",
+                album: "Stars Dance",
+                youtubeId: "n-D1EB74Ckg",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Love Me Like You Do",
+                artist: "Ellie Goulding",
+                album: "Delirium",
+                youtubeId: "AJtDXIazrMo",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Burn",
+                artist: "Ellie Goulding",
+                album: "Halcyon Days",
+                youtubeId: "CGyEd0aKWZE",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lights",
+                artist: "Ellie Goulding",
+                album: "Lights",
+                youtubeId: "0NKUpo_xKyQ",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "On My Mind",
+                artist: "Ellie Goulding",
+                album: "Delirium",
+                youtubeId: "B-QHGTrUPVE",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Anything Could Happen",
+                artist: "Ellie Goulding",
+                album: "Halcyon",
+                youtubeId: "5hzgS9s-tE8",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Symphony",
+                artist: "Clean Bandit ft. Zara Larsson",
+                album: "What Is Love?",
+                youtubeId: "aatr_2MstrI",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Rather Be",
+                artist: "Clean Bandit ft. Jess Glynne",
+                album: "New Eyes",
+                youtubeId: "m-M1AtrxztU",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Rockabye",
+                artist: "Clean Bandit ft. Sean Paul",
+                album: "What Is Love?",
+                youtubeId: "papuvlVeZg8",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Solo",
+                artist: "Clean Bandit ft. Demi Lovato",
+                album: "What Is Love?",
+                youtubeId: "8JnfIa84TnU",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "This Is What You Came For",
+                artist: "Calvin Harris ft. Rihanna",
+                album: "This Is What You Came For",
+                youtubeId: "kOkQ4T5WO9E",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "How Deep Is Your Love",
+                artist: "Calvin Harris & Disciples",
+                album: "Motion",
+                youtubeId: "EgqUJOudrcM",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Summer",
+                artist: "Calvin Harris",
+                album: "Motion",
+                youtubeId: "ebXbLfLACGM",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Feel So Close",
+                artist: "Calvin Harris",
+                album: "18 Months",
+                youtubeId: "dGghkjpNCQ8",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sweet but Psycho",
+                artist: "Ava Max",
+                album: "Heaven & Hell",
+                youtubeId: "WXBHCQYxwr0",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Kings & Queens",
+                artist: "Ava Max",
+                album: "Heaven & Hell",
+                youtubeId: "jH1RNk8954Q",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "My Head & My Heart",
+                artist: "Ava Max",
+                album: "Heaven & Hell",
+                youtubeId: "3C5DGp5g_lU",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "OMG What's Happening",
+                artist: "Ava Max",
+                album: "Heaven & Hell",
+                youtubeId: "DK1cC9V5O4M",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "So Am I",
+                artist: "Ava Max",
+                album: "Heaven & Hell",
+                youtubeId: "FKXSh14svlQ",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Don't Call Me Angel",
+                artist: "Ariana Grande, Miley Cyrus, Lana Del Rey",
+                album: "Charlie's Angels",
+                youtubeId: "oHzE44PzQNw",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wrecking Ball",
+                artist: "Miley Cyrus",
+                album: "Bangerz",
+                youtubeId: "My2FRPA3Gf8",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "We Can't Stop",
+                artist: "Miley Cyrus",
+                album: "Bangerz",
+                youtubeId: "LrUvu1mlWco",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Malibu",
+                artist: "Miley Cyrus",
+                album: "Younger Now",
+                youtubeId: "sPU8V-nvUEk",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Midnight Sky",
+                artist: "Miley Cyrus",
+                album: "Plastic Hearts",
+                youtubeId: "aS1no1myeTM",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Flowers",
+                artist: "Miley Cyrus",
+                album: "Endless Summer Vacation",
+                youtubeId: "G7KNmW9a75Y",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Mockingbird",
+                artist: "Eminem",
+                album: "Encore",
+                youtubeId: "S9bCLPwzSC0",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "The Real Slim Shady",
+                artist: "Eminem",
+                album: "The Marshall Mathers LP",
+                youtubeId: "eJO5HU_7_1w",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Without Me",
+                artist: "Eminem",
+                album: "The Eminem Show",
+                youtubeId: "YVkUvmDQ3HY",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Stan",
+                artist: "Eminem ft. Dido",
+                album: "The Marshall Mathers LP",
+                youtubeId: "gOMhN-hfMtY",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Rap God",
+                artist: "Eminem",
+                album: "The Marshall Mathers LP 2",
+                youtubeId: "XbGs_qK2PQA",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Not Afraid",
+                artist: "Eminem",
+                album: "Recovery",
+                youtubeId: "j5-yKhDd64s",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "All of Me",
+                artist: "John Legend",
+                album: "Love in the Future",
+                youtubeId: "450p7goxZqg",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Let Her Go",
+                artist: "Passenger",
+                album: "All the Little Lights",
+                youtubeId: "RBumgq5yVrA",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Photograph",
+                artist: "Ed Sheeran",
+                album: "x (Multiply)",
+                youtubeId: "nSDgHBxUbVQ",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Castle on the Hill",
+                artist: "Ed Sheeran",
+                album: "÷ (Divide)",
+                youtubeId: "K0ibBPhiaG0",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Treat You Better",
+                artist: "Shawn Mendes",
+                album: "Illuminate",
+                youtubeId: "lY2yjAdbvdQ",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Stitches",
+                artist: "Shawn Mendes",
+                album: "Handwritten",
+                youtubeId: "VbfpW0pbvaU",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "There's Nothing Holdin' Me Back",
+                artist: "Shawn Mendes",
+                album: "Illuminate",
+                youtubeId: "dT2owtxkU8k",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Smells Like Teen Spirit",
+                artist: "Nirvana",
+                album: "Nevermind",
+                youtubeId: "hTWKbfoikeg",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Don't Stop Believin'",
+                artist: "Journey",
+                album: "Escape",
+                youtubeId: "1k8craCGpgs",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wonderwall",
+                artist: "Oasis",
+                album: "(What's the Story) Morning Glory?",
+                youtubeId: "bx1Bh8ZvH84",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Africa",
+                artist: "Toto",
+                album: "Toto IV",
+                youtubeId: "FTQbiNvZqaY",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sweet Child O' Mine",
+                artist: "Guns N' Roses",
+                album: "Appetite for Destruction",
+                youtubeId: "1w7OgIMMRc4",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hotel California",
+                artist: "Eagles",
+                album: "Hotel California",
+                youtubeId: "09839DpTctU",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Stairway to Heaven",
+                artist: "Led Zeppelin",
+                album: "Led Zeppelin IV",
+                youtubeId: "QkF3oxziUI4",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Imagine",
+                artist: "John Lennon",
+                album: "Imagine",
+                youtubeId: "YkgkThdzX-8",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hey Jude",
+                artist: "The Beatles",
+                album: "The Beatles 1967-1970",
+                youtubeId: "A_MjCqQoLLA",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Let It Be",
+                artist: "The Beatles",
+                album: "Let It Be",
+                youtubeId: "QDYfEBY9NM4",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Yesterday",
+                artist: "The Beatles",
+                album: "Help!",
+                youtubeId: "NrgmdOz227I",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Come Together",
+                artist: "The Beatles",
+                album: "Abbey Road",
+                youtubeId: "45cYwDMibGo",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Here Comes the Sun",
+                artist: "The Beatles",
+                album: "Abbey Road",
+                youtubeId: "KQetemT1sWc",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Billie Jean",
+                artist: "Michael Jackson",
+                album: "Thriller",
+                youtubeId: "Zi_XLOBDo_Y",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Beat It",
+                artist: "Michael Jackson",
+                album: "Thriller",
+                youtubeId: "oRdxUFDoQe0",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Thriller",
+                artist: "Michael Jackson",
+                album: "Thriller",
+                youtubeId: "sOnqjkJTMaA",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Smooth Criminal",
+                artist: "Michael Jackson",
+                album: "Bad",
+                youtubeId: "h_D3VFfhvs4",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Man in the Mirror",
+                artist: "Michael Jackson",
+                album: "Bad",
+                youtubeId: "PivWY9wn5ps",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Livin' on a Prayer",
+                artist: "Bon Jovi",
+                album: "Slippery When Wet",
+                youtubeId: "lDK9QqIzhwk",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "You Give Love a Bad Name",
+                artist: "Bon Jovi",
+                album: "Slippery When Wet",
+                youtubeId: "KrZHPOeOxQQ",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "It's My Life",
+                artist: "Bon Jovi",
+                album: "Crush",
+                youtubeId: "vx2u5uUu3DE",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Eye of the Tiger",
+                artist: "Survivor",
+                album: "Eye of the Tiger",
+                youtubeId: "btPJPFnesV4",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Don't Stop Me Now",
+                artist: "Queen",
+                album: "Jazz",
+                youtubeId: "HgzGwKwLmgM",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "We Will Rock You",
+                artist: "Queen",
+                album: "News of the World",
+                youtubeId: "-tJYN-eG1zk",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "We Are the Champions",
+                artist: "Queen",
+                album: "News of the World",
+                youtubeId: "04854XqcfCY",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Another One Bites the Dust",
+                artist: "Queen",
+                album: "The Game",
+                youtubeId: "rY0WxgSXdEE",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Somebody to Love",
+                artist: "Queen",
+                album: "A Day at the Races",
+                youtubeId: "kijpcUv-b8M",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Under Pressure",
+                artist: "Queen & David Bowie",
+                album: "Hot Space",
+                youtubeId: "a01QQZyl-_I",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sweet Dreams (Are Made of This)",
+                artist: "Eurythmics",
+                album: "Sweet Dreams",
+                youtubeId: "qeMFqkcPYcg",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Take On Me",
+                artist: "a-ha",
+                album: "Hunting High and Low",
+                youtubeId: "djV11Xbc914",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Every Breath You Take",
+                artist: "The Police",
+                album: "Synchronicity",
+                youtubeId: "OMOGaugKpzs",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Careless Whisper",
+                artist: "George Michael",
+                album: "Make It Big",
+                youtubeId: "izGwDsrQ1eQ",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Faith",
+                artist: "George Michael",
+                album: "Faith",
+                youtubeId: "lu3VTngm1F0",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Girls Just Want to Have Fun",
+                artist: "Cyndi Lauper",
+                album: "She's So Unusual",
+                youtubeId: "PIb6AZdTr-A",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Time After Time",
+                artist: "Cyndi Lauper",
+                album: "She's So Unusual",
+                youtubeId: "VdQY7BusJNU",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Total Eclipse of the Heart",
+                artist: "Bonnie Tyler",
+                album: "Faster Than the Speed of Night",
+                youtubeId: "lcOxhH8N3Bo",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Like a Prayer",
+                artist: "Madonna",
+                album: "Like a Prayer",
+                youtubeId: "79fzeNUqQbQ",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Material Girl",
+                artist: "Madonna",
+                album: "Like a Virgin",
+                youtubeId: "6p-lDYPR2P8",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Vogue",
+                artist: "Madonna",
+                album: "I'm Breathless",
+                youtubeId: "GuJQSAiODqI",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Like a Virgin",
+                artist: "Madonna",
+                album: "Like a Virgin",
+                youtubeId: "s__rX_WL100",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hung Up",
+                artist: "Madonna",
+                album: "Confessions on a Dance Floor",
+                youtubeId: "EDwb9jOVRtU",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Will Always Love You",
+                artist: "Whitney Houston",
+                album: "The Bodyguard",
+                youtubeId: "3JWTaaS7LdU",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Wanna Dance with Somebody",
+                artist: "Whitney Houston",
+                album: "Whitney",
+                youtubeId: "eH3giaIzONA",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "My Heart Will Go On",
+                artist: "Celine Dion",
+                album: "Let's Talk About Love",
+                youtubeId: "DNyKDI9pn0Q",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "The Power of Love",
+                artist: "Celine Dion",
+                album: "The Colour of My Love",
+                youtubeId: "Y8HOfcYWZoo",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Because of You",
+                artist: "Kelly Clarkson",
+                album: "Breakaway",
+                youtubeId: "Ra-Om7UMSJc",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Since U Been Gone",
+                artist: "Kelly Clarkson",
+                album: "Breakaway",
+                youtubeId: "R7UrFYvl5TE",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Stronger (What Doesn't Kill You)",
+                artist: "Kelly Clarkson",
+                album: "Stronger",
+                youtubeId: "Xn676-fLq7I",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "My Life Would Suck Without You",
+                artist: "Kelly Clarkson",
+                album: "All I Ever Wanted",
+                youtubeId: "cRM70Jw7F4M",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Just the Way You Are",
+                artist: "Bruno Mars",
+                album: "Doo-Wops & Hooligans",
+                youtubeId: "LjhCEhWiKXk",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Grenade",
+                artist: "Bruno Mars",
+                album: "Doo-Wops & Hooligans",
+                youtubeId: "SR6iYWJxHqs",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Locked Out of Heaven",
+                artist: "Bruno Mars",
+                album: "Unorthodox Jukebox",
+                youtubeId: "e-fA-gBCkj0",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "When I Was Your Man",
+                artist: "Bruno Mars",
+                album: "Unorthodox Jukebox",
+                youtubeId: "ekzHIouo8Q4",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Treasure",
+                artist: "Bruno Mars",
+                album: "Unorthodox Jukebox",
+                youtubeId: "nPvuNsRccVw",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "24K Magic",
+                artist: "Bruno Mars",
+                album: "24K Magic",
+                youtubeId: "UqyT8IEBkvY",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "That's What I Like",
+                artist: "Bruno Mars",
+                album: "24K Magic",
+                youtubeId: "PMivT7MJ41M",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Finesse (Remix)",
+                artist: "Bruno Mars ft. Cardi B",
+                album: "24K Magic",
+                youtubeId: "LsoLEjrDogU",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Halo",
+                artist: "Beyoncé",
+                album: "I Am... Sasha Fierce",
+                youtubeId: "bnVUHWCynig",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Single Ladies (Put a Ring on It)",
+                artist: "Beyoncé",
+                album: "I Am... Sasha Fierce",
+                youtubeId: "4m1EFMoRFvY",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Crazy in Love",
+                artist: "Beyoncé ft. Jay-Z",
+                album: "Dangerously in Love",
+                youtubeId: "ViwtNLUqkMY",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Irreplaceable",
+                artist: "Beyoncé",
+                album: "B'Day",
+                youtubeId: "2EwViQxSJJQ",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "If I Were a Boy",
+                artist: "Beyoncé",
+                album: "I Am... Sasha Fierce",
+                youtubeId: "AWpsOqh8q0M",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Love on Top",
+                artist: "Beyoncé",
+                album: "4",
+                youtubeId: "Ob7vObnFUJc",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Drunk in Love",
+                artist: "Beyoncé ft. Jay-Z",
+                album: "Beyoncé",
+                youtubeId: "p1JPKLa-Ofc",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Formation",
+                artist: "Beyoncé",
+                album: "Lemonade",
+                youtubeId: "WDZJPJV__bQ",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Run the World (Girls)",
+                artist: "Beyoncé",
+                album: "4",
+                youtubeId: "VBmMU_iwe6U",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Best Thing I Never Had",
+                artist: "Beyoncé",
+                album: "4",
+                youtubeId: "FHp2KgyQUFk",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Cry Me a River",
+                artist: "Justin Timberlake",
+                album: "Justified",
+                youtubeId: "DksSPZTZES0",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "SexyBack",
+                artist: "Justin Timberlake",
+                album: "FutureSex/LoveSounds",
+                youtubeId: "3gOHvDP_vCs",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Mirrors",
+                artist: "Justin Timberlake",
+                album: "The 20/20 Experience",
+                youtubeId: "uuZE_IRwLNI",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Suit & Tie",
+                artist: "Justin Timberlake ft. Jay-Z",
+                album: "The 20/20 Experience",
+                youtubeId: "IsUsVbTj2AY",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "What Goes Around... Comes Around",
+                artist: "Justin Timberlake",
+                album: "FutureSex/LoveSounds",
+                youtubeId: "TOrnUquxtwA",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "In the End",
+                artist: "Linkin Park",
+                album: "Hybrid Theory",
+                youtubeId: "eVTXPUF4Oz4",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Numb",
+                artist: "Linkin Park",
+                album: "Meteora",
+                youtubeId: "kXYiU_JCYtU",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "What I've Done",
+                artist: "Linkin Park",
+                album: "Minutes to Midnight",
+                youtubeId: "8sgycukafqQ",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "New Divide",
+                artist: "Linkin Park",
+                album: "Transformers",
+                youtubeId: "ysSxxIqKNN0",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Crawling",
+                artist: "Linkin Park",
+                album: "Hybrid Theory",
+                youtubeId: "Gd9OhYroLN0",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "One Step Closer",
+                artist: "Linkin Park",
+                album: "Hybrid Theory",
+                youtubeId: "4qlCC1GOwFw",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Boulevard of Broken Dreams",
+                artist: "Green Day",
+                album: "American Idiot",
+                youtubeId: "Soa3gO7tL-c",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "American Idiot",
+                artist: "Green Day",
+                album: "American Idiot",
+                youtubeId: "Ee_uujKuJMI",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "21 Guns",
+                artist: "Green Day",
+                album: "21st Century Breakdown",
+                youtubeId: "r00ikilDxW4",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wake Me Up When September Ends",
+                artist: "Green Day",
+                album: "American Idiot",
+                youtubeId: "NU9JoFKlaZ0",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "When I Come Around",
+                artist: "Green Day",
+                album: "Dookie",
+                youtubeId: "i8dh9gDzmz8",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Basket Case",
+                artist: "Green Day",
+                album: "Dookie",
+                youtubeId: "NUTGr5t3MoY",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Seven Nation Army",
+                artist: "The White Stripes",
+                album: "Elephant",
+                youtubeId: "0J2QdDbelmY",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Mr. Brightside",
+                artist: "The Killers",
+                album: "Hot Fuss",
+                youtubeId: "gGdGFtwCNBE",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Somebody That I Used to Know",
+                artist: "Gotye ft. Kimbra",
+                album: "Making Mirrors",
+                youtubeId: "8UVNT4wvIGY",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Pumped Up Kicks",
+                artist: "Foster the People",
+                album: "Torches",
+                youtubeId: "SDTZ7iX4vTQ",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Radioactive",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "ktvTqknDobU",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Ride",
+                artist: "Twenty One Pilots",
+                album: "Blurryface",
+                youtubeId: "_nqNwWJb0nQ",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Stressed Out",
+                artist: "Twenty One Pilots",
+                album: "Blurryface",
+                youtubeId: "pXRviuL6vMY",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Heathens",
+                artist: "Twenty One Pilots",
+                album: "Suicide Squad",
+                youtubeId: "UprcpdwuwCg",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Chlorine",
+                artist: "Twenty One Pilots",
+                album: "Trench",
+                youtubeId: "eJnQBXmZ7Ek",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Shape of You (Remix)",
+                artist: "Ed Sheeran ft. Stormzy",
+                album: "÷ (Divide)",
+                youtubeId: "9hCJNg4W0CQ",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "505",
+                artist: "Arctic Monkeys",
+                album: "Favourite Worst Nightmare",
+                youtubeId: "qU9mHegkTc4",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Do I Wanna Know?",
+                artist: "Arctic Monkeys",
+                album: "AM",
+                youtubeId: "bpOSxM0rNPM",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Somebody Else",
+                artist: "The 1975",
+                album: "I Like It When You Sleep",
+                youtubeId: "Bimd2nZirT4",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "The Sound",
+                artist: "The 1975",
+                album: "I Like It When You Sleep",
+                youtubeId: "FSnAllHtG70",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sweater Weather",
+                artist: "The Neighbourhood",
+                album: "I Love You",
+                youtubeId: "GCdwKhTtNNw",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Riptide",
+                artist: "Vance Joy",
+                album: "Dream Your Life Away",
+                youtubeId: "uJ_1HMAGb4k",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Shake It Off",
+                artist: "Taylor Swift",
+                album: "1989",
+                youtubeId: "nfWlot6h_JM",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Radioactive",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "ktvTqknDobU",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Demons",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "mWRsgZuwf_8",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "It's Time",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "sENM2wA_FTg",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "On Top of the World",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "w5tWYmIOWGk",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Whatever It Takes",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "gOsM-DYAEhY",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Natural",
+                artist: "Imagine Dragons",
+                album: "Origins",
+                youtubeId: "0I647GU3Jsc",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Enemy",
+                artist: "Imagine Dragons x JID",
+                album: "Arcane",
+                youtubeId: "D9G1VOjN_84",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Bones",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "lkXH-Wve4N8",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Believer",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "7wtfhZwyrcc",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sharks",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "Y2NkuFIlICk",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Bet My Life",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "4ht80uzIhNs",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Gold",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "Rl3ELiPXFRo",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Monster",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "hhSA9H9Iaqw",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Walking the Wire",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "1nv9br7P7g0",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Next to Me",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "hqAauanvEew",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Birds",
+                artist: "Imagine Dragons",
+                album: "Origins",
+                youtubeId: "vOXZkm9p_zY",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Zero",
+                artist: "Imagine Dragons",
+                album: "Origins",
+                youtubeId: "2VkR80RyTXE",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Bad Liar",
+                artist: "Imagine Dragons",
+                album: "Origins",
+                youtubeId: "I-QfPUz1es8",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wrecked",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "AjeLCDNLAkE",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Follow You",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "k3zimSRKqNw",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Cutthroat",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "lOyDa8aW1CM",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "My Life",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "RQSMJLEizer",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lonely",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "nqsg2hFTP0U",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Symphony",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "mP80C6KzL9A",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Ferris Wheel",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "YcF8FX5U5X8",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Waves",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "mzCdJQKDVKE",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Don't Like Myself",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "N8V0_GFgj80",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Higher Ground",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "WjO4qiY7O_k",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Crushed",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "V3DjpKc94wY",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Take Me Home",
+                artist: "Jess Glynne",
+                album: "I Cry When I Laugh",
+                youtubeId: "zRHNi3QfFlE",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hold My Hand",
+                artist: "Jess Glynne",
+                album: "I Cry When I Laugh",
+                youtubeId: "qI-95cTMeLM",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Don't Be So Hard on Yourself",
+                artist: "Jess Glynne",
+                album: "I Cry When I Laugh",
+                youtubeId: "I2wURDqiPes",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Thursday",
+                artist: "Jess Glynne",
+                album: "Always In Between",
+                youtubeId: "Z0kgv8VH8jI",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I'll Be There",
+                artist: "Jess Glynne",
+                album: "Always In Between",
+                youtubeId: "VnuImW1dWAk",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "All I Am",
+                artist: "Jess Glynne",
+                album: "Always In Between",
+                youtubeId: "fB6HWXO_cks",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "One Touch",
+                artist: "Jess Glynne",
+                album: "Always In Between",
+                youtubeId: "jKjU50OeagY",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Ain't Got Far to Go",
+                artist: "Jess Glynne",
+                album: "I Cry When I Laugh",
+                youtubeId: "uTP6p5wqgzo",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Don't You Worry About a Thing",
+                artist: "Tori Kelly",
+                album: "Sing",
+                youtubeId: "8gTF4b2eaxw",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hallelujah",
+                artist: "Pentatonix",
+                album: "That's Christmas to Me",
+                youtubeId: "LRP8d7hhpoQ",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Mary, Did You Know?",
+                artist: "Pentatonix",
+                album: "That's Christmas to Me",
+                youtubeId: "ifCWN5pJGIE",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Cheerleader",
+                artist: "OMI",
+                album: "Me 4 U",
+                youtubeId: "jGflUbPQfW8",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lean On",
+                artist: "Major Lazer & DJ Snake ft. MØ",
+                album: "Peace Is the Mission",
+                youtubeId: "YqeW9_5kURI",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Cold Water",
+                artist: "Major Lazer ft. Justin Bieber",
+                album: "Music Is the Weapon",
+                youtubeId: "a59gmGkq_pw",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Know No Better",
+                artist: "Major Lazer ft. Travis Scott",
+                album: "Music Is the Weapon",
+                youtubeId: "Bj7J7vXCf5w",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Powerful",
+                artist: "Major Lazer ft. Ellie Goulding",
+                album: "Peace Is the Mission",
+                youtubeId: "Y_3ZsQJHNl8",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Run Up",
+                artist: "Major Lazer ft. PARTYNEXTDOOR",
+                album: "Music Is the Weapon",
+                youtubeId: "s616v2pSWDU",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Be Together",
+                artist: "Major Lazer ft. Wild Belle",
+                album: "Peace Is the Mission",
+                youtubeId: "cB3hhdFYP-0",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Light It Up",
+                artist: "Major Lazer ft. Nyla & Fuse ODG",
+                album: "Peace Is the Mission",
+                youtubeId: "r2LpOUwca94",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Boom",
+                artist: "Major Lazer & MOTi ft. Ty Dolla $ign",
+                album: "Music Is the Weapon",
+                youtubeId: "wVPOIdeaMgM",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Que Calor",
+                artist: "Major Lazer ft. J Balvin & El Alfa",
+                album: "Music Is the Weapon",
+                youtubeId: "rLFyIGUd-d0",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lay Your Head on Me",
+                artist: "Major Lazer ft. Marcus Mumford",
+                album: "Music Is the Weapon",
+                youtubeId: "kJzS89OkUhY",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Love Somebody",
+                artist: "Maroon 5",
+                album: "Overexposed",
+                youtubeId: "MU8B4XDI3Uw",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Payphone",
+                artist: "Maroon 5 ft. Wiz Khalifa",
+                album: "Overexposed",
+                youtubeId: "KRaWnd3LJfs",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "One More Night",
+                artist: "Maroon 5",
+                album: "Overexposed",
+                youtubeId: "fwK7ggA3-bu",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Daylight",
+                artist: "Maroon 5",
+                album: "Overexposed",
+                youtubeId: "HoRknuiNt5Q",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Maps",
+                artist: "Maroon 5",
+                album: "V",
+                youtubeId: "Y7ix6RITXM0",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Animals",
+                artist: "Maroon 5",
+                album: "V",
+                youtubeId: "qpgTC9MDx1o",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Don't Wanna Know",
+                artist: "Maroon 5 ft. Kendrick Lamar",
+                album: "Red Pill Blues",
+                youtubeId: "ANS9sSJA9Yc",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Cold",
+                artist: "Maroon 5 ft. Future",
+                album: "Red Pill Blues",
+                youtubeId: "XatRGut65VI",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "What Lovers Do",
+                artist: "Maroon 5 ft. SZA",
+                album: "Red Pill Blues",
+                youtubeId: "5Wiio4KoGe8",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wait",
+                artist: "Maroon 5",
+                album: "Red Pill Blues",
+                youtubeId: "4uTNVumfm84",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Beautiful Mistakes",
+                artist: "Maroon 5 ft. Megan Thee Stallion",
+                album: "Jordi",
+                youtubeId: "BSzSn-PRdtI",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lost",
+                artist: "Maroon 5",
+                album: "Jordi",
+                youtubeId: "IIPvDYHRILI",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "This Love",
+                artist: "Maroon 5",
+                album: "Songs About Jane",
+                youtubeId: "XPpTgCho5ZA",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "She Will Be Loved",
+                artist: "Maroon 5",
+                album: "Songs About Jane",
+                youtubeId: "nIjVuRTm-dc",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sunday Morning",
+                artist: "Maroon 5",
+                album: "Songs About Jane",
+                youtubeId: "Ary_GccJ-zg",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Harder to Breathe",
+                artist: "Maroon 5",
+                album: "Songs About Jane",
+                youtubeId: "ZQ516aGRu0",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Makes Me Wonder",
+                artist: "Maroon 5",
+                album: "It Won't Be Soon Before Long",
+                youtubeId: "sA8iaIxDRUo",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wake Up Call",
+                artist: "Maroon 5",
+                album: "It Won't Be Soon Before Long",
+                youtubeId: "n4YlyMcE7GI",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Won't Go Home Without You",
+                artist: "Maroon 5",
+                album: "It Won't Be Soon Before Long",
+                youtubeId: "xxHsR9lind4",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Misery",
+                artist: "Maroon 5",
+                album: "Hands All Over",
+                youtubeId: "6g6g2mvItp4",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Give a Little More",
+                artist: "Maroon 5",
+                album: "Hands All Over",
+                youtubeId: "Ml7XneQCAH8",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Never Gonna Leave This Bed",
+                artist: "Maroon 5",
+                album: "Hands All Over",
+                youtubeId: "sKdISkT9jj8",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Moves Like Jagger",
+                artist: "Maroon 5 ft. Christina Aguilera",
+                album: "Hands All Over",
+                youtubeId: "iEPTlhBmwRg",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lucky Strike",
+                artist: "Maroon 5",
+                album: "Overexposed",
+                youtubeId: "rblt2EtFfC4",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Stereo Hearts",
+                artist: "Gym Class Heroes ft. Adam Levine",
+                album: "The Papercut Chronicles II",
+                youtubeId: "T3E9Wjbq44E",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Counting Stars",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "hT_nvWreIhg",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Secrets",
+                artist: "OneRepublic",
+                album: "Waking Up",
+                youtubeId: "qHm9MG9xw1o",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Good Life",
+                artist: "OneRepublic",
+                album: "Waking Up",
+                youtubeId: "jZhQOvvV45w",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "All the Right Moves",
+                artist: "OneRepublic",
+                album: "Waking Up",
+                youtubeId: "qrOeGCJdZe4",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "If I Lose Myself",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "9gDnYIOuFjY",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Love Runs Out",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "0OWj0CiM8WU",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Lived",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "z0rxydSolwU",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wherever I Go",
+                artist: "OneRepublic",
+                album: "Oh My My",
+                youtubeId: "dLCHO-UK8zs",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Kids",
+                artist: "OneRepublic",
+                album: "Oh My My",
+                youtubeId: "zsgjHiwJRBs",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Let's Hurt Tonight",
+                artist: "OneRepublic",
+                album: "Oh My My",
+                youtubeId: "7MwMB7iFRCw",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Rich Love",
+                artist: "OneRepublic",
+                album: "Human",
+                youtubeId: "RdD1qu69AGY",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Connection",
+                artist: "OneRepublic",
+                album: "Human",
+                youtubeId: "oJu0LRqH0vM",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wanted",
+                artist: "OneRepublic",
+                album: "Human",
+                youtubeId: "W9P_qUnMaFg",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Rescue Me",
+                artist: "OneRepublic",
+                album: "Human",
+                youtubeId: "3tWpM9ZbT-w",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Somebody to Love",
+                artist: "OneRepublic",
+                album: "Human",
+                youtubeId: "mnWeNwLRy_g",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Run",
+                artist: "OneRepublic",
+                album: "Human",
+                youtubeId: "cWj32gjZ2rE",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Didn't I",
+                artist: "OneRepublic",
+                album: "Human",
+                youtubeId: "G72lmLWKiHQ",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Apologize",
+                artist: "Timbaland ft. OneRepublic",
+                album: "Shock Value",
+                youtubeId: "ZSM3w1v-A_Y",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Stop and Stare",
+                artist: "OneRepublic",
+                album: "Dreaming Out Loud",
+                youtubeId: "HtNS1afUOnE",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Say (All I Need)",
+                artist: "OneRepublic",
+                album: "Dreaming Out Loud",
+                youtubeId: "yRpDX_KW-kU",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Mercy",
+                artist: "OneRepublic",
+                album: "Dreaming Out Loud",
+                youtubeId: "XP4clbHc4Xg",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Come Home",
+                artist: "OneRepublic",
+                album: "Dreaming Out Loud",
+                youtubeId: "YWFUehOXkQg",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Preacher",
+                artist: "OneRepublic",
+                album: "Oh My My",
+                youtubeId: "fOzq-9EIdS8",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Future Looks Good",
+                artist: "OneRepublic",
+                album: "Oh My My",
+                youtubeId: "K8vC0H6LiN0",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Au Revoir",
+                artist: "OneRepublic",
+                album: "Oh My My",
+                youtubeId: "GZbJbQl9D6g",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "A.I.",
+                artist: "OneRepublic",
+                album: "Oh My My",
+                youtubeId: "Y-PxJPfAG2U",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Choke",
+                artist: "OneRepublic",
+                album: "Oh My My",
+                youtubeId: "z9lYZmk-3ds",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Better",
+                artist: "OneRepublic",
+                album: "Human",
+                youtubeId: "LILz-elt94o",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wild Life",
+                artist: "OneRepublic",
+                album: "Human",
+                youtubeId: "W9AJ2ZHmPVk",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "West Coast",
+                artist: "OneRepublic",
+                album: "Artificial Paradise",
+                youtubeId: "LrOAl_q1vJ4",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sunshine",
+                artist: "OneRepublic",
+                album: "Artificial Paradise",
+                youtubeId: "VpOTpl0Ax6I",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Runaway",
+                artist: "OneRepublic",
+                album: "Artificial Paradise",
+                youtubeId: "0fLNVl16TPs",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Ain't Worried",
+                artist: "OneRepublic",
+                album: "Top Gun: Maverick",
+                youtubeId: "mNEUkkoUoIA",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "No Vacancy",
+                artist: "OneRepublic",
+                album: "Oh My My",
+                youtubeId: "YiQxGwTKtoo",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Truth to Power",
+                artist: "OneRepublic",
+                album: "One Night in Malibu",
+                youtubeId: "qbpvKsUAMvU",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Start Again",
+                artist: "OneRepublic",
+                album: "Human",
+                youtubeId: "VKdRWZ7yk2g",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lose Somebody",
+                artist: "Kygo & OneRepublic",
+                album: "Golden Hour",
+                youtubeId: "Cj-objda23w",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lift Me Up",
+                artist: "OneRepublic",
+                album: "Waking Up",
+                youtubeId: "FwAykLOpD2s",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Marchin On",
+                artist: "OneRepublic",
+                album: "Waking Up",
+                youtubeId: "q3zqJs7JUCQ",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Fear",
+                artist: "OneRepublic",
+                album: "Waking Up",
+                youtubeId: "zb0xU_8Rj4A",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Tyrant",
+                artist: "OneRepublic",
+                album: "Waking Up",
+                youtubeId: "Bg0NdVHh6gE",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Mirage",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "YCjmUxMBuPo",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Burning Bridges",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "3AZlTYvP3o4",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Something I Need",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "WM7jscreRg4",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Can't Stop",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "wxiQRKbxJBw",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Au Revoir",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "z9lYZmk-3ds",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Life in Color",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "52xAcRuGfPo",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "What You Wanted",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "2rPxgPNLQjc",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Don't Look Down",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "4kbVplFtcLM",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Feel Again",
+                artist: "OneRepublic",
+                album: "Native",
+                youtubeId: "V3EYjVPRClU",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Radioactive",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "ktvTqknDobU",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Demons",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "mWRsgZuwf_8",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "It's Time",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "sENM2wA_FTg",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "On Top of the World",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "w5tWYmIOWGk",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Whatever It Takes",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "gOsM-DYAEhY",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Believer",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "7wtfhZwyrcc",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Thunder",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "fKopy74weus",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Walking the Wire",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "1nv9br7P7g0",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Yesterday",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "qjWz8rpGgKQ",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Rise Up",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "qjWz8rpGgKQ",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Next to Me",
+                artist: "Imagine Dragons",
+                album: "Evolve",
+                youtubeId: "hqAauanvEew",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Birds",
+                artist: "Imagine Dragons",
+                album: "Origins",
+                youtubeId: "vOXZkm9p_zY",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Zero",
+                artist: "Imagine Dragons",
+                album: "Origins",
+                youtubeId: "2VkR80RyTXE",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Natural",
+                artist: "Imagine Dragons",
+                album: "Origins",
+                youtubeId: "0I647GU3Jsc",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Bad Liar",
+                artist: "Imagine Dragons",
+                album: "Origins",
+                youtubeId: "I-QfPUz1es8",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Machine",
+                artist: "Imagine Dragons",
+                album: "Origins",
+                youtubeId: "rWcUEFK493E",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wrecked",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "AjeLCDNLAkE",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Follow You",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "k3zimSRKqNw",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Cutthroat",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "lOyDa8aW1CM",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Enemy",
+                artist: "Imagine Dragons x JID",
+                album: "Arcane",
+                youtubeId: "D9G1VOjN_84",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Bones",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "lkXH-Wve4N8",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sharks",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "Y2NkuFIlICk",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Symphony",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "mP80C6KzL9A",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Younger",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "FW8b3lSgPgw",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Don't Like Myself",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "N8V0_GFgj80",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Crushed",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "V3DjpKc94wY",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Bet My Life",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "4ht80uzIhNs",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Gold",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "Rl3ELiPXFRo",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Shots",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "qQrgto184Tk",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I'm So Sorry",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "0HgJwrwEEKQ",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Dream",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: " VRHQ8z7-yo8",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Polaroid",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "wmjyO-r1OhA",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Friction",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "o0aoh363PI4",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Monster",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "hhSA9H9Iaqw",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Warriors",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "fmI_Ndrxy14",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Battle Cry",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "ZgB2qLzM7f0",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Roots",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "qQrgto184Tk",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hopeless Opus",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "5_fAMANEPUo",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Thief",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "qQrgto184Tk",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Waves",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "mzCdJQKDVKE",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Higher Ground",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "WjO4qiY7O_k",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Dull Knives",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "5SiN_IKNdaM",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "One Day",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "IhP3J0j9JmY",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Easy Come Easy Go",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "1S0lhpQFSPA",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Giants",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "h6WbAeqMxHY",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "It's Ok",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "48KTEoQKkiU",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "#1",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "uGcsIdGOuZY",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Lonely",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "nqsg2hFTP0U",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Wrecked (Acoustic)",
+                artist: "Imagine Dragons",
+                album: "Mercury - Act 1",
+                youtubeId: "YaCG5qP1msE",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Monday",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "m7_pKF0xjwQ",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Sirens",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "V4w10esVYKY",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Peace of Mind",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "lP7iL2KRe4E",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Ferris Wheel",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "YcF8FX5U5X8",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Tied",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "O6kH8O3j0WM",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Wish",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "FTvRVQGGJrU",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Blur",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "gcG5lZH4LzM",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Take It Easy",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "qpKd5jKoaW8",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Continual",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "KQbbIL27BXA",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "They Don't Know You Like I Do",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "J2KbIa6dBuU",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Younger (Acoustic)",
+                artist: "Imagine Dragons",
+                album: "Mercury - Acts 1 & 2",
+                youtubeId: "W5EhVN51PEg",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Hole Inside Our Chests",
+                artist: "Imagine Dragons",
+                album: "Night Visions",
+                youtubeId: "4Q2bmkRBWUI",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Emma",
+                artist: "Imagine Dragons",
+                album: "Hell and Silence EP",
+                youtubeId: "G93j0KO4WfA",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Curse",
+                artist: "Imagine Dragons",
+                album: "Imagine Dragons EP",
+                youtubeId: "sUGF1U7MPKI",
+                cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop"
+            },
+            {
+                title: "I Need a Minute",
+                artist: "Imagine Dragons",
+                album: "It's Time EP",
+                youtubeId: "Dgg-y_yC3N0",
+                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Drive",
+                artist: "Imagine Dragons",
+                album: "Imagine Dragons EP",
+                youtubeId: "qhduQhDqtb4",
+                cover: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Cover Up",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "kGHSn9fN1TI",
+                cover: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=400&fit=crop"
+            },
+            {
+                title: "The Unknown",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "y0cWe2lKDLI",
+                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Second Chances",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "0qjP4DRkLYw",
+                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=400&fit=crop"
+            },
+            {
+                title: "Release",
+                artist: "Imagine Dragons",
+                album: "Smoke + Mirrors",
+                youtubeId: "MpPvGq0JCGw",
+                cover: "https://images.unsplash.com/photo-1458560871784-56d23406c091?w=400&h=400&fit=crop"
+            }
+        ];
+
+        // Player state
+        let currentSongIndex = 0;
+        let isPlaying = false;
+        let volume = 70;
+        let progressInterval = null;
+        let ytPlayer = null;
+        let playerReady = false;
+
+        // DOM elements
+        const trackTitle = document.getElementById('trackTitle');
+        const trackArtist = document.getElementById('trackArtist');
+        const trackAlbum = document.getElementById('trackAlbum');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const playBtn = document.getElementById('playBtn');
+        const playIcon = document.getElementById('playIcon');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const repeatBtn = document.getElementById('repeatBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeFill = document.getElementById('volumeFill');
+        const queueList = document.getElementById('queueList');
+        const queueCount = document.getElementById('queueCount');
+
+        // Create player div
+        const playerDiv = document.createElement('div');
+        playerDiv.id = 'player';
+        document.getElementById('videoContainer').appendChild(playerDiv);
+
+        // YouTube Player API Ready
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('player', {
+                height: '360',
+                width: '640',
+                videoId: songs[0].youtubeId,
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 1,
+                    'modestbranding': 1,
+                    'rel': 0
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            playerReady = true;
+            ytPlayer.setVolume(volume);
+            updateDuration();
+            init();
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                // Automatically advance to next song and keep playing
+                currentSongIndex = (currentSongIndex + 1) % songs.length;
+                loadSong(currentSongIndex);
+                // Auto-play the next song
+                setTimeout(() => {
+                    if (ytPlayer && playerReady) {
+                        ytPlayer.playVideo();
+                    }
+                }, 500);
+            } else if (event.data === YT.PlayerState.PLAYING) {
+                isPlaying = true;
+                playIcon.classList.remove('fa-play');
+                playIcon.classList.add('fa-pause');
+                startProgress();
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                isPlaying = false;
+                playIcon.classList.remove('fa-pause');
+                playIcon.classList.add('fa-play');
+                stopProgress();
+            }
+        }
+
+        // Initialize
+        function init() {
+            loadSong(currentSongIndex);
+            renderQueue();
+            updateQueueCount();
+        }
+
+        // Load song
+        function loadSong(index) {
+            const song = songs[index];
+            currentSongIndex = index;
+
+            if (ytPlayer && playerReady) {
+                ytPlayer.loadVideoById(song.youtubeId);
+                ytPlayer.pauseVideo();
+            }
+
+            trackTitle.textContent = song.title;
+            trackArtist.textContent = song.artist;
+            trackAlbum.textContent = song.album;
+            currentTimeEl.textContent = formatTime(0);
+            progressFill.style.width = '0%';
+
+            updateQueue();
+            
+            // Update duration when video loads
+            setTimeout(updateDuration, 1000);
+        }
+
+        function updateDuration() {
+            if (ytPlayer && playerReady) {
+                const duration = ytPlayer.getDuration();
+                if (duration && duration > 0) {
+                    durationEl.textContent = formatTime(duration);
+                }
+            }
+        }
+
+        // Play/Pause
+        function togglePlay() {
+            if (!ytPlayer || !playerReady) return;
+            
+            if (isPlaying) {
+                ytPlayer.pauseVideo();
+            } else {
+                ytPlayer.playVideo();
+            }
+        }
+
+        // Progress update from YouTube
+        function startProgress() {
+            stopProgress();
+            progressInterval = setInterval(() => {
+                if (ytPlayer && playerReady && isPlaying) {
+                    const currentTime = ytPlayer.getCurrentTime();
+                    const duration = ytPlayer.getDuration();
+                    
+                    if (duration > 0) {
+                        const percentage = (currentTime / duration) * 100;
+                        progressFill.style.width = percentage + '%';
+                        currentTimeEl.textContent = formatTime(currentTime);
+                    }
+                }
+            }, 100);
+        }
+
+        function stopProgress() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+        }
+
+        // Format time
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Next song
+        function nextSong() {
+            if (!ytPlayer || !playerReady) return;
+            
+            // Check if currently playing using YouTube player state
+            const wasPlaying = (ytPlayer.getPlayerState() === YT.PlayerState.PLAYING);
+            
+            // Move to next song
+            currentSongIndex = (currentSongIndex + 1) % songs.length;
+            loadSong(currentSongIndex);
+            
+            // Auto-play if music was playing
+            if (wasPlaying) {
+                setTimeout(() => {
+                    if (ytPlayer && playerReady) {
+                        ytPlayer.playVideo();
+                    }
+                }, 500);
+            }
+        }
+
+        // Previous song
+        function prevSong() {
+            if (!ytPlayer || !playerReady) return;
+            
+            // Check if currently playing using YouTube player state
+            const wasPlaying = (ytPlayer.getPlayerState() === YT.PlayerState.PLAYING);
+            const currentTime = ytPlayer.getCurrentTime();
+            
+            if (currentTime > 3) {
+                // If more than 3 seconds into the song, restart it
+                ytPlayer.seekTo(0);
+            } else {
+                // Go to previous song
+                currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+                loadSong(currentSongIndex);
+                
+                // Auto-play if music was playing
+                if (wasPlaying) {
+                    setTimeout(() => {
+                        if (ytPlayer && playerReady) {
+                            ytPlayer.playVideo();
+                        }
+                    }, 500);
+                }
+            }
+        }
+
+        // Progress bar click
+        progressBar.addEventListener('click', (e) => {
+            if (!ytPlayer || !playerReady) return;
+            
+            const rect = progressBar.getBoundingClientRect();
+            const percentage = (e.clientX - rect.left) / rect.width;
+            const duration = ytPlayer.getDuration();
+            const seekTime = percentage * duration;
+            
+            ytPlayer.seekTo(seekTime);
+        });
+
+        // Volume slider click
+        volumeSlider.addEventListener('click', (e) => {
+            const rect = volumeSlider.getBoundingClientRect();
+            const newVolume = (e.clientX - rect.left) / rect.width;
+            volume = Math.max(0, Math.min(100, newVolume * 100));
+            volumeFill.style.width = volume + '%';
+            
+            if (ytPlayer && playerReady) {
+                ytPlayer.setVolume(volume);
+            }
+        });
+
+        // Render queue
+        function renderQueue() {
+            queueList.innerHTML = '';
+            songs.forEach((song, index) => {
+                const queueItem = document.createElement('div');
+                queueItem.className = 'queue-item' + (index === currentSongIndex ? ' active' : '');
+                queueItem.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <img src="${song.cover}" alt="${song.title}" class="w-12 h-12 rounded">
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium truncate">${song.title}</div>
+                            <div class="text-sm text-gray-400 truncate">${song.artist}</div>
+                        </div>
+                    </div>
+                `;
+                queueItem.addEventListener('click', () => {
+                    const wasPlaying = isPlaying;
+                    loadSong(index);
+                    if (wasPlaying) {
+                        setTimeout(() => {
+                            if (ytPlayer && playerReady) {
+                                ytPlayer.playVideo();
+                            }
+                        }, 500);
+                    }
+                });
+                queueList.appendChild(queueItem);
+            });
+        }
+
+        function updateQueue() {
+            const items = queueList.querySelectorAll('.queue-item');
+            items.forEach((item, index) => {
+                item.classList.toggle('active', index === currentSongIndex);
+            });
+        }
+
+        function updateQueueCount() {
+            queueCount.textContent = `${songs.length} songs`;
+        }
+
+        // Event listeners
+        playBtn.addEventListener('click', togglePlay);
+        nextBtn.addEventListener('click', nextSong);
+        prevBtn.addEventListener('click', prevSong);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlay();
+            } else if (e.code === 'ArrowRight') {
+                e.preventDefault();
+                nextSong();
+            } else if (e.code === 'ArrowLeft') {
+                e.preventDefault();
+                prevSong();
+            }
+        });
+
+        // Initialize player
+        init();
+    </script>
+</body>
+</html>
